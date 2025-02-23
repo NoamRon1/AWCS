@@ -1,9 +1,10 @@
 from machine import ADC, Pin, I2C
 import i2c_lcd
 import dht
-from time import sleep_ms
+from time import sleep_ms, sleep
 
-class AWCS():
+
+class AWCS:
     def __init__(self, pipeTempPin, dhtPin):
         self.lcdSize = (2, 16)
 
@@ -11,11 +12,9 @@ class AWCS():
         self.lcd1 = i2c_lcd.I2cLcd(i2c, 0x27, *self.lcdSize)
         self.lcd2 = i2c_lcd.I2cLcd(i2c, 0x26, *self.lcdSize)
 
-        self.pipeTemp = ADC(Pin(pipeTempPin))
-        self.pipeTemp.atten(ADC.ATTN_11DB)
+        self.dht_sensor = dht.DHT11(Pin(dhtPin, Pin.IN, Pin.PULL_UP))
 
-        self.dht_sensor = dht.DHT11(Pin(dhtPin))
-
+    def setup_completed(self):
         self.lcd1.putstr("LCD Setup completed")
         self.lcd2.putstr("LCD Setup completed")
         print("LCD Setup completed")
@@ -23,12 +22,16 @@ class AWCS():
         self.lcd1.clear()
         self.lcd2.clear()
 
-
-
     def get_DHT_data(self):
-        self.dht_sensor.measure()
-        return self.dht_sensor.temperature(), self.dht_sensor.humidity()
-
+        try:
+            self.dht_sensor.measure()
+            temp = self.dht_sensor.temperature()
+            hum = self.dht_sensor.humidity()
+            print("Temperature:", temp, "Humidity:", hum)
+        except OSError as e:
+            print("Sensor error:", e)
+        sleep(2)
+        return temp, hum
 
     def display_data(self):
         dht_temp, dht_hum = self.get_DHT_data()
@@ -50,3 +53,10 @@ class AWCS():
         self.lcd2.putstr(text_line_2)
         self.lcd1.move_to(0, 0)
         self.lcd2.move_to(0, 0)
+
+    def run(self):
+        setup_completed()
+        for i in range(100):
+            temp, hum = get_DHT_data()
+            # not completed.
+
