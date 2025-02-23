@@ -1,5 +1,9 @@
 from AWCS import AWCS
 
-system = AWCS([5,6], [0x27, 0x26], [7, 8])
+system = AWCS([5, 6], [0x27, 0x26], 7)
 
-system.run()
+for i in range(1):
+    datas = system.get_DHT_data()
+    system.display_data(datas)
+
+
